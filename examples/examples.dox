@@ -1,0 +1,100 @@
+/*
+    Copyright (C) 2011 Collabora Ltd.
+      @author George Kiagiadakis <george.kiagiadakis@collabora.co.uk>
+
+    This library is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*! \example examples/player/main.cpp
+ * This is an example audio/video player using QtGStreamer.
+ *
+ * In this example, the GStreamer playbin2 element is used to perform most
+ * of the tasks. Our code is mostly integrating the UI with the pipeline,
+ * handling state changes, doing queries to learn about the position
+ * and duration of the stream, performing seeking, etc...
+ *
+ * player.h:
+ * \include examples/player/player.h
+ *
+ * player.cpp:
+ * \include examples/player/player.cpp
+ *
+ * mediaapp.h:
+ * \include examples/player/mediaapp.h
+ *
+ * mediaapp.cpp:
+ * \include examples/player/mediaapp.cpp
+ *
+ * main.cpp:
+ */
+
+/*! \example examples/appsink-src/main.cpp
+ * This example demonstrates how to use QGst::Utils::ApplicationSource and
+ * QGst::Utils::ApplicationSink to create a custom source and sink respectively.
+ *
+ * In this example, we have two pipelines, one pipeline that gets data from a file,
+ * decodes the audio stream and sends the audio buffers to appsink, and a second
+ * pipeline that gets data from appsrc and pushes them to an audio sink. Appsink
+ * from the first pipeline is linked with appsrc from the second pipeline in our
+ * code, by listening to appsink's newBuffer() signal, getting the buffer
+ * and pushing it to appsrc with the pushBuffer() method. The result is a choppy
+ * audio player.
+ */
+
+/*! \example examples/recorder/main.cpp
+ * This is a recording application that takes audio from a microphone
+ * and video from either a camera or the X11 screen, encodes them with
+ * theora and speex and saves the result in a file.
+ *
+ * The intention of this example is to show how simple it is to perform such
+ * complex tasks with GStreamer and how easy it is to change the functionality
+ * of the program by changing just one element (with autovideosrc it will
+ * do a webcam recording, but with ximagesrc it will do a screencast).
+ *
+ * Tasks demonstrated in this example include:
+ * \li How to create and link elements manually.
+ * \li How to create and link elements using a pipeline description.
+ * \li How to handle bus messages.
+ * \li Others...
+ */
+
+/*! \example examples/voip/main.cpp
+ * This is a simple VoIP application that takes audio from a microphone and
+ * video from the video test source, encodes them with speex and h264 respectively
+ * and sends them to the other side using RTP.
+ *
+ * The same application is both a client and a server. To make a call between them,
+ * you need to configure the destination ports of the one side to be the source
+ * ports of the other and vice versa.
+ */
+
+/*! \example examples/qmlplayer/main.cpp
+ * This example demonstrates how to paint video on QML.
+ *
+ * Much of the code here is borrowed from the player example and it is not generally
+ * a good example on how to write QML and connect it with C++. The intention is just
+ * to demonstrate the use of QGst::Ui::GraphicsVideoSurface, which is bound on the
+ * QML context and then used by the VideoItem.
+ *
+ * qmlplayer.qml:
+ * \include examples/qmlplayer/qmlplayer.qml
+ *
+ * player.h:
+ * \include examples/qmlplayer/player.h
+ *
+ * player.cpp:
+ * \include examples/qmlplayer/player.cpp
+ *
+ * main.cpp:
+ */
