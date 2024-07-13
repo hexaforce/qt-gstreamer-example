@@ -1,2 +1,10 @@
 build/
 *.pro.user
+qmlsink/.qmake.stash
+qmlsink/main.o
+qmlsink/Makefile
+qmlsink/play
+qmlsink/qrc_qmlsink.cpp
+qmlsink/qrc_qmlsink.o
+.vscode/
+qmlsink/SetPlaying.o

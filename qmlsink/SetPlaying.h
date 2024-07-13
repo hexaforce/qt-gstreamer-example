@@ -6,13 +6,13 @@
 
 class SetPlaying : public QRunnable {
 public:
-  SetPlaying(GstElement *);
+  SetPlaying(GstElement *pipeline);
   ~SetPlaying();
 
-  void run();
+  void run() override;
 
 private:
-  GstElement *pipeline_;
+  GstElement *m_pipeline;
 };
 
 #endif // SETPLAYING_H

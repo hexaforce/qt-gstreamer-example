@@ -1,15 +1,13 @@
 #include "SetPlaying.h"
 
-SetPlaying::SetPlaying(GstElement *pipeline) {
-  this->pipeline_ = pipeline ? static_cast<GstElement *>(gst_object_ref(pipeline)) : NULL;
-}
+SetPlaying::SetPlaying(GstElement *pipeline) { this->m_pipeline = pipeline ? static_cast<GstElement *>(gst_object_ref(pipeline)) : NULL; }
 
 SetPlaying::~SetPlaying() {
-  if (this->pipeline_)
-    gst_object_unref(this->pipeline_);
+  if (this->m_pipeline)
+    gst_object_unref(this->m_pipeline);
 }
 
 void SetPlaying::run() {
-  if (this->pipeline_)
-    gst_element_set_state(this->pipeline_, GST_STATE_PLAYING);
+  if (this->m_pipeline)
+    gst_element_set_state(this->m_pipeline, GST_STATE_PLAYING);
 }

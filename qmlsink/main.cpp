@@ -1,9 +1,9 @@
+#include "SetPlaying.h"
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <gst/gst.h>
-#include "SetPlaying.h"
 
 int main(int argc, char *argv[]) {
   int ret;
@@ -13,15 +13,14 @@ int main(int argc, char *argv[]) {
   {
     QGuiApplication app(argc, argv);
 
-    GstElement *pipeline = gst_pipeline_new(NULL);
-    GstElement *src      = gst_element_factory_make("videotestsrc", NULL);
-    GstElement *glupload = gst_element_factory_make("glupload", NULL);
-    GstElement *sink = gst_element_factory_make("qmlglsink", NULL);
+    GstElement *pipeline     = gst_pipeline_new(NULL);
+    GstElement *src          = gst_element_factory_make("v4l2src", NULL);
+    GstElement *videoconvert = gst_element_factory_make("videoconvert", NULL);
+    GstElement *glupload     = gst_element_factory_make("glupload", NULL);
+    GstElement *sink         = gst_element_factory_make("qmlglsink", NULL);
 
-    g_assert(src && glupload && sink);
-
-    gst_bin_add_many(GST_BIN(pipeline), src, glupload, sink, NULL);
-    gst_element_link_many(src, glupload, sink, NULL);
+    gst_bin_add_many(GST_BIN(pipeline), src, videoconvert, glupload, sink, NULL);
+    gst_element_link_many(src, videoconvert, glupload, sink, NULL);
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -32,7 +31,7 @@ int main(int argc, char *argv[]) {
     /* find and set the videoItem on the sink */
     rootObject = static_cast<QQuickWindow *>(engine.rootObjects().first());
     videoItem  = rootObject->findChild<QQuickItem *>("videoItem");
-    g_assert(videoItem);
+
     g_object_set(sink, "widget", videoItem, NULL);
 
     rootObject->scheduleRenderJob(new SetPlaying(pipeline), QQuickWindow::BeforeSynchronizingStage);
