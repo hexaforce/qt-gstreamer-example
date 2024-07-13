@@ -6,6 +6,7 @@
 #include <gst/gst.h>
 
 enum class CodecType { H264, H265 };
+enum class VendorType { Libav, Nvidia };
 
 void setupLocalCapturePipeline(GstElement *pipeline, GstElement *sink) {
   GstElement *src          = gst_element_factory_make("v4l2src", NULL);
@@ -16,7 +17,8 @@ void setupLocalCapturePipeline(GstElement *pipeline, GstElement *sink) {
   gst_element_link_many(src, videoconvert, glupload, sink, NULL);
 }
 
-void setupJpegReceivePipeline(GstElement *pipeline, GstElement *sink, gint port) {
+// gst-launch-1.0 -e udpsrc port=5000 caps="application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)JPEG, payload=(int)26" ! rtpjpegdepay ! jpegdec ! videoconvert ! autovideosink
+void setupJpegReceivePipeline_SoftwareDecoding(GstElement *pipeline, GstElement *sink, gint port) {
   GstElement *src          = gst_element_factory_make("udpsrc", NULL);
   GstElement *rtpdepay     = gst_element_factory_make("rtpjpegdepay", NULL);
   GstElement *jpegparse    = gst_element_factory_make("jpegparse", NULL);
@@ -33,7 +35,19 @@ void setupJpegReceivePipeline(GstElement *pipeline, GstElement *sink, gint port)
   gst_element_link_many(src, rtpdepay, jpegparse, decoder, videoconvert, glupload, sink, NULL);
 }
 
-void setupH26xReceivePipeline(GstElement *pipeline, GstElement *sink, gint port, CodecType codecType) {
+
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H264 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvideoconvert ! autovideosink sync=false
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H265 ! rtph265depay ! h265parse ! nvv4l2decoder ! nvvideoconvert ! autovideosink sync=false
+
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H264 ! rtph264depay ! h264parse ! nvh264sldec ! nvvideoconvert ! autovideosink sync=false
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H265 ! rtph265depay ! h265parse ! nvh265sldec ! nvvideoconvert ! autovideosink sync=false
+
+
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H264 ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H265 ! rtph265depay ! h265parse ! avdec_h265 ! videoconvert ! autovideosink
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H264 ! rtph264depay ! h264parse ! nvh264dec ! videoconvert ! autovideosink
+// gst-launch-1.0 -e udpsrc port=5000 ! application/x-rtp, encoding-name=H265 ! rtph265depay ! h265parse ! nvh265dec ! videoconvert ! autovideosink
+void setupH26xReceivePipeline_SoftwareDecoding(GstElement *pipeline, GstElement *sink, gint port, CodecType codecType, VendorType vendorType) {
   GstElement *src          = gst_element_factory_make("udpsrc", NULL);
   GstElement *rtpdepay     = nullptr;
   GstElement *parse        = nullptr;
@@ -46,11 +60,11 @@ void setupH26xReceivePipeline(GstElement *pipeline, GstElement *sink, gint port,
   if (codecType == CodecType::H264) {
     rtpdepay = gst_element_factory_make("rtph264depay", NULL);
     parse    = gst_element_factory_make("h264parse", NULL);
-    decoder  = gst_element_factory_make("avdec_h264", NULL);
+    decoder  = gst_element_factory_make(vendorType == VendorType::Libav ? "avdec_h264" : "nvh264dec", NULL);
   } else if (codecType == CodecType::H265) {
     rtpdepay = gst_element_factory_make("rtph265depay", NULL);
     parse    = gst_element_factory_make("h265parse", NULL);
-    decoder  = gst_element_factory_make("avdec_h265", NULL);
+    decoder  = gst_element_factory_make(vendorType == VendorType::Libav ? "avdec_h265" : "nvh265dec", NULL);
   } else {
     g_printerr("Unsupported codec type.\n");
     return;
@@ -77,7 +91,7 @@ int main(int argc, char *argv[]) {
 
     gint port = 5000;
     // setupLocalCapturePipeline(pipeline, sink);
-    setupH26xReceivePipeline(pipeline, sink, port, CodecType::H264);
+    setupH26xReceivePipeline_SoftwareDecoding(pipeline, sink, port, CodecType::H264, VendorType::Libav);
     // setupH265ReceivePipeline(pipeline, sink, port);
     // setupJpegReceivePipeline(pipeline, sink, port);
 
