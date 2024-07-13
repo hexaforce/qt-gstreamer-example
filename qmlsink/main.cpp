@@ -78,8 +78,8 @@ int main(int argc, char *argv[]) {
 
     gint port = 5000;
     // setupLocalCapturePipeline(pipeline, sink);
-    // setupH264ReceivePipeline(pipeline, sink, port);
-    setupH265ReceivePipeline(pipeline, sink, port);
+    setupH264ReceivePipeline(pipeline, sink, port);
+    // setupH265ReceivePipeline(pipeline, sink, port);
     // setupJpegReceivePipeline(pipeline, sink, port);
 
     QQmlApplicationEngine engine;
