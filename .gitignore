@@ -8,3 +8,4 @@ qmlsink/qrc_qmlsink.cpp
 qmlsink/qrc_qmlsink.o
 .vscode/
 qmlsink/SetPlaying.o
+qmlsink/video_streamer
