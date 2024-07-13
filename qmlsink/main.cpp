@@ -5,6 +5,8 @@
 #include <QQuickWindow>
 #include <gst/gst.h>
 
+enum class CodecType { H264, H265 };
+
 void setupLocalCapturePipeline(GstElement *pipeline, GstElement *sink) {
   GstElement *src          = gst_element_factory_make("v4l2src", NULL);
   GstElement *videoconvert = gst_element_factory_make("videoconvert", NULL);
@@ -31,38 +33,35 @@ void setupJpegReceivePipeline(GstElement *pipeline, GstElement *sink, gint port)
   gst_element_link_many(src, rtpdepay, jpegparse, decoder, videoconvert, glupload, sink, NULL);
 }
 
-void setupH264ReceivePipeline(GstElement *pipeline, GstElement *sink, gint port) {
+void setupH26xReceivePipeline(GstElement *pipeline, GstElement *sink, gint port, CodecType codecType) {
   GstElement *src          = gst_element_factory_make("udpsrc", NULL);
-  GstElement *rtpdepay     = gst_element_factory_make("rtph264depay", NULL);
-  GstElement *h264parse    = gst_element_factory_make("h264parse", NULL);
-  GstElement *decoder      = gst_element_factory_make("avdec_h264", NULL);
+  GstElement *rtpdepay     = nullptr;
+  GstElement *parse        = nullptr;
+  GstElement *decoder      = nullptr;
   GstElement *videoconvert = gst_element_factory_make("videoconvert", NULL);
   GstElement *glupload     = gst_element_factory_make("glupload", NULL);
 
   g_object_set(src, "port", port, NULL);
-  GstCaps *caps = gst_caps_new_simple("application/x-rtp", "media", G_TYPE_STRING, "video", "encoding-name", G_TYPE_STRING, "H264", "payload", G_TYPE_INT, 96, NULL);
+
+  if (codecType == CodecType::H264) {
+    rtpdepay = gst_element_factory_make("rtph264depay", NULL);
+    parse    = gst_element_factory_make("h264parse", NULL);
+    decoder  = gst_element_factory_make("avdec_h264", NULL);
+  } else if (codecType == CodecType::H265) {
+    rtpdepay = gst_element_factory_make("rtph265depay", NULL);
+    parse    = gst_element_factory_make("h265parse", NULL);
+    decoder  = gst_element_factory_make("avdec_h265", NULL);
+  } else {
+    g_printerr("Unsupported codec type.\n");
+    return;
+  }
+
+  GstCaps *caps = gst_caps_new_simple("application/x-rtp", "media", G_TYPE_STRING, "video", "encoding-name", G_TYPE_STRING, (codecType == CodecType::H264) ? "H264" : "H265", "payload", G_TYPE_INT, 96, NULL);
   g_object_set(src, "caps", caps, NULL);
   gst_caps_unref(caps);
 
-  gst_bin_add_many(GST_BIN(pipeline), src, rtpdepay, h264parse, decoder, videoconvert, glupload, sink, NULL);
-  gst_element_link_many(src, rtpdepay, h264parse, decoder, videoconvert, glupload, sink, NULL);
-}
-
-void setupH265ReceivePipeline(GstElement *pipeline, GstElement *sink, gint port) {
-  GstElement *src          = gst_element_factory_make("udpsrc", NULL);
-  GstElement *rtpdepay     = gst_element_factory_make("rtph265depay", NULL);
-  GstElement *h265parse    = gst_element_factory_make("h265parse", NULL);
-  GstElement *decoder      = gst_element_factory_make("avdec_h265", NULL);
-  GstElement *videoconvert = gst_element_factory_make("videoconvert", NULL);
-  GstElement *glupload     = gst_element_factory_make("glupload", NULL);
-
-  g_object_set(src, "port", port, NULL);
-  GstCaps *caps = gst_caps_new_simple("application/x-rtp", "media", G_TYPE_STRING, "video", "encoding-name", G_TYPE_STRING, "H265", "payload", G_TYPE_INT, 96, NULL);
-  g_object_set(src, "caps", caps, NULL);
-  gst_caps_unref(caps);
-
-  gst_bin_add_many(GST_BIN(pipeline), src, rtpdepay, h265parse, decoder, videoconvert, glupload, sink, NULL);
-  gst_element_link_many(src, rtpdepay, h265parse, decoder, videoconvert, glupload, sink, NULL);
+  gst_bin_add_many(GST_BIN(pipeline), src, rtpdepay, parse, decoder, videoconvert, glupload, sink, NULL);
+  gst_element_link_many(src, rtpdepay, parse, decoder, videoconvert, glupload, sink, NULL);
 }
 
 int main(int argc, char *argv[]) {
@@ -78,7 +77,7 @@ int main(int argc, char *argv[]) {
 
     gint port = 5000;
     // setupLocalCapturePipeline(pipeline, sink);
-    setupH264ReceivePipeline(pipeline, sink, port);
+    setupH26xReceivePipeline(pipeline, sink, port, CodecType::H264);
     // setupH265ReceivePipeline(pipeline, sink, port);
     // setupJpegReceivePipeline(pipeline, sink, port);
 
