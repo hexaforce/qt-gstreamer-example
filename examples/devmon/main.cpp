@@ -19,16 +19,15 @@
 
 #include <QGst/Init>
 
-int main(int argc, char *argv[])
-{
-    QGst::init(&argc, &argv);
-    QApplication a(argc, argv);
+int main(int argc, char *argv[]) {
+  QGst::init(&argc, &argv);
+  QApplication a(argc, argv);
 
-    MainWindow w;
-    w.show();
+  MainWindow w;
+  w.show();
 
-    int ret = a.exec();
+  int ret = a.exec();
 
-    QGst::cleanup();
-    return ret;
+  QGst::cleanup();
+  return ret;
 }

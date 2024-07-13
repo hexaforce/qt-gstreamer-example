@@ -19,29 +19,28 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <QObject>
-#include <QGst/Pipeline>
 #include <QGst/Message>
+#include <QGst/Pipeline>
+#include <QObject>
 
-class Player : public QObject
-{
-    Q_OBJECT
+class Player : public QObject {
+  Q_OBJECT
 public:
-    explicit Player(QObject *parent = 0);
+  explicit Player(QObject *parent = 0);
 
-    void setVideoSink(const QGst::ElementPtr & sink);
+  void setVideoSink(const QGst::ElementPtr &sink);
 
 public Q_SLOTS:
-    void play();
-    void pause();
-    void stop();
-    void setUri(const QString & uri);
+  void play();
+  void pause();
+  void stop();
+  void setUri(const QString &uri);
 
 private:
-    void onBusMessage(const QGst::MessagePtr & message);
+  void onBusMessage(const QGst::MessagePtr &message);
 
-    QGst::PipelinePtr m_pipeline;
-    QGst::ElementPtr m_videoSink;
+  QGst::PipelinePtr m_pipeline;
+  QGst::ElementPtr  m_videoSink;
 };
 
 #endif // PLAYER_H

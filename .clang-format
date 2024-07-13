@@ -1,0 +1,8 @@
+BasedOnStyle: LLVM
+IndentWidth: 2
+UseTab: Never
+TabWidth: 2
+ColumnLimit: 256
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true
+AlignAfterOpenBracket: Align

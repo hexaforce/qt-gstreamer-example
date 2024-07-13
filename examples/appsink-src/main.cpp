@@ -15,119 +15,106 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
 #include <QCoreApplication>
-#include <QGlib/Error>
 #include <QGlib/Connect>
-#include <QGst/Init>
+#include <QGlib/Error>
 #include <QGst/Bus>
-#include <QGst/Pipeline>
-#include <QGst/Parse>
+#include <QGst/Init>
 #include <QGst/Message>
+#include <QGst/Parse>
+#include <QGst/Pipeline>
 #include <QGst/Utils/ApplicationSink>
 #include <QGst/Utils/ApplicationSource>
+#include <iostream>
 
-
-class MySink : public QGst::Utils::ApplicationSink
-{
+class MySink : public QGst::Utils::ApplicationSink {
 public:
-    MySink(QGst::Utils::ApplicationSource *src)
-        : QGst::Utils::ApplicationSink(), m_src(src) {}
+  MySink(QGst::Utils::ApplicationSource *src) : QGst::Utils::ApplicationSink(), m_src(src) {}
 
 protected:
-    virtual void eos()
-    {
-        m_src->endOfStream();
-    }
+  virtual void eos() { m_src->endOfStream(); }
 
-    virtual QGst::FlowReturn newSample()
-    {
-        QGst::SamplePtr sample = pullSample();
-        m_src->pushBuffer(sample->buffer());
-        return QGst::FlowOk;
-    }
+  virtual QGst::FlowReturn newSample() {
+    QGst::SamplePtr sample = pullSample();
+    m_src->pushBuffer(sample->buffer());
+    return QGst::FlowOk;
+  }
 
 private:
-    QGst::Utils::ApplicationSource *m_src;
+  QGst::Utils::ApplicationSource *m_src;
 };
 
-
-class Player : public QCoreApplication
-{
+class Player : public QCoreApplication {
 public:
-    Player(int argc, char **argv);
-    ~Player();
+  Player(int argc, char **argv);
+  ~Player();
 
 private:
-    void onBusMessage(const QGst::MessagePtr & message);
+  void onBusMessage(const QGst::MessagePtr &message);
 
 private:
-    QGst::Utils::ApplicationSource m_src;
-    MySink m_sink;
-    QGst::PipelinePtr pipeline1;
-    QGst::PipelinePtr pipeline2;
+  QGst::Utils::ApplicationSource m_src;
+  MySink                         m_sink;
+  QGst::PipelinePtr              pipeline1;
+  QGst::PipelinePtr              pipeline2;
 };
 
-Player::Player(int argc, char **argv)
-    : QCoreApplication(argc, argv), m_sink(&m_src)
-{
-    QGst::init(&argc, &argv);
+Player::Player(int argc, char **argv) : QCoreApplication(argc, argv), m_sink(&m_src) {
+  QGst::init(&argc, &argv);
 
-    if (argc <= 1) {
-        std::cerr << "Usage: " << argv[0] << " <audio_file>" << std::endl;
-        std::exit(1);
-    }
+  if (argc <= 1) {
+    std::cerr << "Usage: " << argv[0] << " <audio_file>" << std::endl;
+    std::exit(1);
+  }
 
-    const char *caps = "audio/x-raw, format=(string)S16LE, channels=(int)1,"
-                       " rate=(int)44100, layout=(string)interleaved";
+  const char *caps = "audio/x-raw, format=(string)S16LE, channels=(int)1,"
+                     " rate=(int)44100, layout=(string)interleaved";
 
-    /* source pipeline */
-    QString pipe1Descr = QString("filesrc location=\"%1\" ! "
-                                 "decodebin ! "
-                                 "audioconvert ! "
-                                 "audioresample ! "
-                                 "appsink name=\"mysink\" caps=\"%2\"").arg(argv[1], caps);
-    pipeline1 = QGst::Parse::launch(pipe1Descr).dynamicCast<QGst::Pipeline>();
-    m_sink.setElement(pipeline1->getElementByName("mysink"));
-    QGlib::connect(pipeline1->bus(), "message::error", this, &Player::onBusMessage);
-    pipeline1->bus()->addSignalWatch();
+  /* source pipeline */
+  QString pipe1Descr = QString("filesrc location=\"%1\" ! "
+                               "decodebin ! "
+                               "audioconvert ! "
+                               "audioresample ! "
+                               "appsink name=\"mysink\" caps=\"%2\"")
+                           .arg(argv[1], caps);
+  pipeline1 = QGst::Parse::launch(pipe1Descr).dynamicCast<QGst::Pipeline>();
+  m_sink.setElement(pipeline1->getElementByName("mysink"));
+  QGlib::connect(pipeline1->bus(), "message::error", this, &Player::onBusMessage);
+  pipeline1->bus()->addSignalWatch();
 
-    /* sink pipeline */
-    QString pipe2Descr = QString("appsrc name=\"mysrc\" caps=\"%1\" is-live=true format=3 ! "
-                                 "autoaudiosink").arg(caps);
-    pipeline2 = QGst::Parse::launch(pipe2Descr).dynamicCast<QGst::Pipeline>();
-    m_src.setElement(pipeline2->getElementByName("mysrc"));
-    QGlib::connect(pipeline2->bus(), "message", this, &Player::onBusMessage);
-    pipeline2->bus()->addSignalWatch();
+  /* sink pipeline */
+  QString pipe2Descr = QString("appsrc name=\"mysrc\" caps=\"%1\" is-live=true format=3 ! "
+                               "autoaudiosink")
+                           .arg(caps);
+  pipeline2 = QGst::Parse::launch(pipe2Descr).dynamicCast<QGst::Pipeline>();
+  m_src.setElement(pipeline2->getElementByName("mysrc"));
+  QGlib::connect(pipeline2->bus(), "message", this, &Player::onBusMessage);
+  pipeline2->bus()->addSignalWatch();
 
-    /* start playing */
-    pipeline1->setState(QGst::StatePlaying);
-    pipeline2->setState(QGst::StatePlaying);
+  /* start playing */
+  pipeline1->setState(QGst::StatePlaying);
+  pipeline2->setState(QGst::StatePlaying);
 }
 
-Player::~Player()
-{
-    pipeline1->setState(QGst::StateNull);
-    pipeline2->setState(QGst::StateNull);
+Player::~Player() {
+  pipeline1->setState(QGst::StateNull);
+  pipeline2->setState(QGst::StateNull);
 }
 
-void Player::onBusMessage(const QGst::MessagePtr & message)
-{
-    switch (message->type()) {
-    case QGst::MessageEos:
-        quit();
-        break;
-    case QGst::MessageError:
-        qCritical() << message.staticCast<QGst::ErrorMessage>()->error();
-        break;
-    default:
-        break;
-    }
+void Player::onBusMessage(const QGst::MessagePtr &message) {
+  switch (message->type()) {
+  case QGst::MessageEos:
+    quit();
+    break;
+  case QGst::MessageError:
+    qCritical() << message.staticCast<QGst::ErrorMessage>()->error();
+    break;
+  default:
+    break;
+  }
 }
 
-
-int main(int argc, char **argv)
-{
-    Player p(argc, argv);
-    return p.exec();
+int main(int argc, char **argv) {
+  Player p(argc, argv);
+  return p.exec();
 }

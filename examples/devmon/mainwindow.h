@@ -26,30 +26,29 @@ class QTextEdit;
 class QTreeWidget;
 class QTreeWidgetItem;
 
-class MainWindow : public QWidget
-{
-    Q_OBJECT
+class MainWindow : public QWidget {
+  Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+  explicit MainWindow(QWidget *parent = 0);
+  ~MainWindow();
 
 private Q_SLOTS:
-    void onCreateElement();
-    void onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem*);
-    void onItemDoubleClicked(QTreeWidgetItem *item, int);
+  void onCreateElement();
+  void onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *);
+  void onItemDoubleClicked(QTreeWidgetItem *item, int);
 
 private:
-    QAction *createElementAction;
-    QTreeWidget *deviceTree;
-    QTextEdit *propEdit;
-    QTextEdit *capsEdit;
-    QGst::DeviceMonitorPtr monitor;
+  QAction               *createElementAction;
+  QTreeWidget           *deviceTree;
+  QTextEdit             *propEdit;
+  QTextEdit             *capsEdit;
+  QGst::DeviceMonitorPtr monitor;
 
-    void onBusMessage(const QGst::MessagePtr & msg);
-    void onDeviceAdded(const QGst::DevicePtr & device);
-    void onDeviceRemoved(const QGst::DevicePtr & device);
-    void createElement(const QGst::DevicePtr & device);
+  void onBusMessage(const QGst::MessagePtr &msg);
+  void onDeviceAdded(const QGst::DevicePtr &device);
+  void onDeviceRemoved(const QGst::DevicePtr &device);
+  void createElement(const QGst::DevicePtr &device);
 };
 
 #endif // MAINWINDOW_H

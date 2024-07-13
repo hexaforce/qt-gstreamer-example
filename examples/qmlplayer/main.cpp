@@ -16,52 +16,51 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "player.h"
-#include <cstdlib>
 #include <QApplication>
-#include <QDeclarativeView>
 #include <QDeclarativeContext>
 #include <QDeclarativeEngine>
-#include <QGst/Ui/GraphicsVideoSurface>
+#include <QDeclarativeView>
 #include <QGst/Init>
+#include <QGst/Ui/GraphicsVideoSurface>
+#include <cstdlib>
 
 #ifndef QMLPLAYER_NO_OPENGL
-# include <QGLWidget>
+#include <QGLWidget>
 #endif
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 #if defined(QTVIDEOSINK_PATH)
-    //this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
-    qputenv("GST_PLUGIN_PATH", QTVIDEOSINK_PATH);
+  // this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
+  qputenv("GST_PLUGIN_PATH", QTVIDEOSINK_PATH);
 #endif
 
-    QApplication app(argc, argv);
-    QGst::init(&argc, &argv);
+  QApplication app(argc, argv);
+  QGst::init(&argc, &argv);
 
-    QDeclarativeView view;
+  QDeclarativeView view;
 
 #if !defined(QMLPLAYER_NO_OPENGL)
-    /*
-     * Setting a QGLWidget as the viewport is highly recommended as
-     * it enables hardware scaling & color conversion on the video sink
-     */
-    view.setViewport(new QGLWidget);
+  /*
+   * Setting a QGLWidget as the viewport is highly recommended as
+   * it enables hardware scaling & color conversion on the video sink
+   */
+  view.setViewport(new QGLWidget);
 #endif
 
-    QGst::Ui::GraphicsVideoSurface *surface = new QGst::Ui::GraphicsVideoSurface(&view);
-    view.rootContext()->setContextProperty(QLatin1String("videoSurface1"), surface);
+  QGst::Ui::GraphicsVideoSurface *surface = new QGst::Ui::GraphicsVideoSurface(&view);
+  view.rootContext()->setContextProperty(QLatin1String("videoSurface1"), surface);
 
-    Player *player = new Player(&view);
-    player->setVideoSink(surface->videoSink());
-    view.rootContext()->setContextProperty(QLatin1String("player"), player);
+  Player *player = new Player(&view);
+  player->setVideoSink(surface->videoSink());
+  view.rootContext()->setContextProperty(QLatin1String("player"), player);
 
 #if defined(UNINSTALLED_IMPORTS_DIR)
-    //this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
-    view.engine()->addImportPath(QLatin1String(UNINSTALLED_IMPORTS_DIR));
+  // this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
+  view.engine()->addImportPath(QLatin1String(UNINSTALLED_IMPORTS_DIR));
 #endif
 
-    view.setSource(QUrl(QLatin1String("qrc:///qmlplayer.qml")));
-    view.show();
+  view.setSource(QUrl(QLatin1String("qrc:///qmlplayer.qml")));
+  view.show();
 
-    return app.exec();
+  return app.exec();
 }

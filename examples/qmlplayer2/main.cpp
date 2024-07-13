@@ -18,43 +18,42 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "player.h"
-#include <QtGui/QGuiApplication>
-#include <QtQuick/QQuickView>
-#include <QtQml/QQmlContext>
-#include <QtQml/QQmlEngine>
 #include <QGst/Init>
 #include <QGst/Quick/VideoSurface>
+#include <QtGui/QGuiApplication>
+#include <QtQml/QQmlContext>
+#include <QtQml/QQmlEngine>
+#include <QtQuick/QQuickView>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 #if defined(QTVIDEOSINK_PATH)
-    //this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
-    qputenv("GST_PLUGIN_PATH", QTVIDEOSINK_PATH);
+  // this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
+  qputenv("GST_PLUGIN_PATH", QTVIDEOSINK_PATH);
 #endif
 
-    QGuiApplication app(argc, argv);
-    QGst::init(&argc, &argv);
+  QGuiApplication app(argc, argv);
+  QGst::init(&argc, &argv);
 
-    QQuickView view;
+  QQuickView view;
 
-    QGst::Quick::VideoSurface *surface = new QGst::Quick::VideoSurface;
-    view.rootContext()->setContextProperty(QLatin1String("videoSurface1"), surface);
+  QGst::Quick::VideoSurface *surface = new QGst::Quick::VideoSurface;
+  view.rootContext()->setContextProperty(QLatin1String("videoSurface1"), surface);
 
-    Player *player = new Player(&view);
-    player->setVideoSink(surface->videoSink());
-    if (argc > 1)
-        player->setUri(QString::fromLocal8Bit(argv[1]));
-    else
-        player->setUri(QLatin1Literal("http://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround-fix.avi"));
-    view.rootContext()->setContextProperty(QLatin1String("player"), player);
+  Player *player = new Player(&view);
+  player->setVideoSink(surface->videoSink());
+  if (argc > 1)
+    player->setUri(QString::fromLocal8Bit(argv[1]));
+  else
+    player->setUri(QLatin1Literal("http://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround-fix.avi"));
+  view.rootContext()->setContextProperty(QLatin1String("player"), player);
 
 #if defined(UNINSTALLED_IMPORTS_DIR)
-    //this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
-    view.engine()->addImportPath(QLatin1String(UNINSTALLED_IMPORTS_DIR));
+  // this allows the example to run from the QtGStreamer build tree without installing QtGStreamer
+  view.engine()->addImportPath(QLatin1String(UNINSTALLED_IMPORTS_DIR));
 #endif
 
-    view.setSource(QUrl(QLatin1String("qrc:///qmlplayer2.qml")));
-    view.show();
+  view.setSource(QUrl(QLatin1String("qrc:///qmlplayer2.qml")));
+  view.show();
 
-    return app.exec();
+  return app.exec();
 }
