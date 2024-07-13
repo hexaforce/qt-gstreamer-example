@@ -28,10 +28,8 @@ int main(int argc, char *argv[]) {
     QQuickItem   *videoItem;
     QQuickWindow *rootObject;
 
-    /* find and set the videoItem on the sink */
     rootObject = static_cast<QQuickWindow *>(engine.rootObjects().first());
     videoItem  = rootObject->findChild<QQuickItem *>("videoItem");
-
     g_object_set(sink, "widget", videoItem, NULL);
 
     rootObject->scheduleRenderJob(new SetPlaying(pipeline), QQuickWindow::BeforeSynchronizingStage);
